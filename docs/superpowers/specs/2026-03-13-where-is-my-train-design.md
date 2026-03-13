@@ -130,14 +130,20 @@ The `/api/vehicles` route needs to enrich raw GTFS-RT data (which only has IDs) 
 - Floating UI overlay - no sidebars or headers consuming map space
 - All UI panels use glassmorphism design language
 
-### Glassmorphism Design System
+### Liquid Glass Design System (iOS 26 / macOS Tahoe inspired)
 
-- `backdrop-filter: blur(20px)` with semi-transparent backgrounds
-- Subtle 1px border with `rgba(255,255,255,0.15)` for edge definition
-- Soft drop shadows with color tint
-- Border radius: 16-20px on panels, 12px on buttons/toggles
-- Typography: Inter (or system sans-serif), light/medium weights
-- Accent colors derived from transit line colors
+The UI follows Apple's Liquid Glass aesthetic - not generic glassmorphism, but the specific translucent, refractive, organic look introduced in iOS 26 / macOS Tahoe.
+
+**Core properties:**
+- **Variable-depth blur:** `backdrop-filter: blur(24-40px)` - heavier blur than typical glassmorphism, creating that dense frosted look
+- **Tinted translucency:** Background color picks up and subtly tints from the map content beneath (not just a flat semi-transparent white/black)
+- **Specular highlights:** A soft gradient highlight along the top/left edge of panels simulating light refraction through glass, using a thin `linear-gradient` overlay
+- **Luminous borders:** 1px border using `rgba(255,255,255,0.2)` with a subtle inner glow, not a hard edge
+- **Deep layering:** Panels cast soft, wide, colored shadows that feel like the glass is floating above the map
+- **Organic radius:** Border radius 20-24px on panels, 14px on buttons/toggles - rounder than typical UI
+- **Typography:** SF Pro Display / Inter, light and medium weights. Slightly larger than typical for that spacious Apple feel.
+- **Vibrancy:** In dark mode, the glass picks up a hint of the underlying map colors (blues from water, greens from parks). In light mode, panels have a warm white tint.
+- **Accent colors:** Transit line colors used for highlights, active states, and glow effects - never flat fills, always with a glassy/luminous quality
 
 ### Floating Controls
 
@@ -248,7 +254,7 @@ The `/api/vehicles` route needs to enrich raw GTFS-RT data (which only has IDs) 
 - All floating controls are keyboard-navigable (tab order, Enter/Space to activate)
 - Filter toggles and theme toggle use `role="switch"` with `aria-checked`
 - Vehicle popup and route panel use `aria-live="polite"` for screen reader announcements
-- Glass panels use a solid-enough background opacity (minimum `rgba(0,0,0,0.7)` dark / `rgba(255,255,255,0.8)` light) to meet WCAG AA contrast on text
+- Liquid glass panels use a solid-enough background opacity (minimum `rgba(0,0,0,0.7)` dark / `rgba(255,255,255,0.8)` light) behind text regions to meet WCAG AA contrast, even if the surrounding glass is more translucent
 - Info bar vehicle count and last-updated time are screen-reader accessible
 
 ## Performance Targets
