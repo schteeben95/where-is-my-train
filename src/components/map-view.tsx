@@ -141,7 +141,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
     [filteredRoutes, effectiveHighlight, isDark]
   )
 
-  const showStops = viewState.zoom >= 13
+  const showStops = viewState.zoom >= 10
   const stopLayers = useMemo(() => {
     if (!showStops || stops.length === 0) return []
     return [
@@ -154,11 +154,11 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         getLineColor: isDark ? [255, 255, 255, 60] : [0, 0, 0, 60],
         stroked: true,
         lineWidthMinPixels: 1,
-        radiusMinPixels: 3,
+        radiusMinPixels: 2,
         radiusMaxPixels: 5,
         pickable: false,
       }),
-      ...(viewState.zoom >= 14.5 ? [
+      ...(viewState.zoom >= 13 ? [
         new TextLayer<StopData>({
           id: 'stop-labels',
           data: stops,
