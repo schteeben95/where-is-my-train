@@ -146,9 +146,14 @@ export default function Home() {
           }}
         >
           <GlassPanel className="px-3 py-2">
-            <span className="text-sm font-medium dark:text-white/90 text-black/80">
+            <p className="text-sm font-medium dark:text-white/90 text-black/80">
               {hoveredStop.name}
-            </span>
+            </p>
+            {hoveredStop.routes.length > 0 && (
+              <p className="text-xs dark:text-white/50 text-black/40 mt-0.5">
+                {hoveredStop.routes.join(', ')}
+              </p>
+            )}
           </GlassPanel>
         </div>
       )}

@@ -16,6 +16,7 @@ export interface StopData {
   name: string
   lat: number
   lng: number
+  routes: string[]
 }
 
 interface MapViewProps {
@@ -52,14 +53,22 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
       fetch('/data/route-stops.json').then(r => r.json()),
     ]).then(([routes, routeStops]: [RouteData[], Record<string, StopData[]>]) => {
       setAllRoutes(routes)
-      // Only include stops from train routes
-      const trainRouteIds = new Set(routes.filter(r => r.type === 'train').map(r => r.id))
+      // Only include stops from train routes, collecting route names per stop
+      const trainRoutes = routes.filter(r => r.type === 'train')
+      const trainRouteIds = new Set(trainRoutes.map(r => r.id))
+      const routeNameById: Record<string, string> = {}
+      for (const r of trainRoutes) {
+        routeNameById[r.id] = r.name.replace(/ - City$/, '')
+      }
       const seen: Record<string, StopData> = {}
       for (const [routeId, stops] of Object.entries(routeStops)) {
         if (!trainRouteIds.has(routeId)) continue
+        const lineName = routeNameById[routeId] || routeId
         for (const stop of stops) {
           if (!seen[stop.id]) {
-            seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng }
+            seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng, routes: [lineName] }
+          } else if (!seen[stop.id].routes.includes(lineName)) {
+            seen[stop.id].routes.push(lineName)
           }
         }
       }
