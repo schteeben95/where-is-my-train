@@ -38,8 +38,8 @@ body {
 .glass {
   position: relative;
   background: hsl(0 0% 0% / 0.12);
-  backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
-  -webkit-backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+  backdrop-filter: blur(64px) saturate(1.5) brightness(1.1);
+  -webkit-backdrop-filter: blur(64px) saturate(1.5) brightness(1.1);
   border-radius: 22px;
   box-shadow:
     /* tight inner edge light */
@@ -72,8 +72,8 @@ body {
 /* Light mode */
 :root:not(.dark) .glass {
   background: hsl(0 0% 100% / 0.35);
-  backdrop-filter: blur(40px) saturate(1.4);
-  -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  backdrop-filter: blur(64px) saturate(1.4);
+  -webkit-backdrop-filter: blur(64px) saturate(1.4);
   box-shadow:
     0 0 2px 1px rgba(255, 255, 255, 0.5) inset,
     0 0 10px 4px rgba(255, 255, 255, 0.15) inset,
@@ -94,8 +94,8 @@ body {
 /* Heavy variant for bottom panel */
 .glass-heavy {
   background: hsl(0 0% 0% / 0.55);
-  backdrop-filter: blur(48px) saturate(1.6) brightness(1.05);
-  -webkit-backdrop-filter: blur(48px) saturate(1.6) brightness(1.05);
+  backdrop-filter: blur(72px) saturate(1.6) brightness(1.05);
+  -webkit-backdrop-filter: blur(72px) saturate(1.6) brightness(1.05);
   box-shadow:
     0 0 2px 1px rgba(255, 255, 255, 0.12) inset,
     0 0 12px 5px rgba(255, 255, 255, 0.05) inset,
@@ -108,8 +108,8 @@ body {
 
 :root:not(.dark) .glass-heavy {
   background: hsl(0 0% 100% / 0.55);
-  backdrop-filter: blur(48px) saturate(1.4);
-  -webkit-backdrop-filter: blur(48px) saturate(1.4);
+  backdrop-filter: blur(72px) saturate(1.4);
+  -webkit-backdrop-filter: blur(72px) saturate(1.4);
   box-shadow:
     0 0 2px 1px rgba(255, 255, 255, 0.6) inset,
     0 0 12px 5px rgba(255, 255, 255, 0.2) inset,
