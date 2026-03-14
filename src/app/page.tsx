@@ -111,7 +111,7 @@ export default function Home() {
         </div>
       </div>
 
-      {hoveredVehicle && hoverPosition && !activeRouteId && (
+      {hoveredVehicle && hoverPosition && (
         <div
           className="absolute z-50 pointer-events-none"
           style={{
