@@ -31,6 +31,7 @@ interface MapViewProps {
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
   onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
   onStopHover: (stop: StopData | null, screenCoords?: { x: number; y: number }) => void
+  onStopClick: (stop: StopData) => void
   onMapClick: () => void
 }
 
@@ -42,7 +43,7 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, highlightStopId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
+export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, highlightStopId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onStopClick, onMapClick }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
   const [hoveredStopId, setHoveredStopId] = useState<string | null>(null)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
@@ -179,6 +180,9 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
           setHoveredStopId(stop?.id ?? null)
           onStopHover(stop, stop ? { x: info.x, y: info.y } : undefined)
         },
+        onClick: (info: any) => {
+          if (info.object) onStopClick(info.object as StopData)
+        },
       }),
       // Visible dots (non-hovered)
       new ScatterplotLayer<StopData>({
@@ -226,7 +230,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         }),
       ] : []),
     ]
-  }, [showStops, stops, viewState.zoom, isDark, onStopHover, activeStopId])
+  }, [showStops, stops, viewState.zoom, isDark, onStopHover, onStopClick, activeStopId])
 
   const layers = useMemo(
     () => [...routeLayers, ...stopLayers, ...vehicleLayers],

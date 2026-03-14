@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { MapView, type StopData } from '@/components/map-view'
+import { StopPanel } from '@/components/stop-panel'
 import { FilterBar } from '@/components/filter-bar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { InfoBar } from '@/components/info-bar'
@@ -28,6 +29,7 @@ export default function Home() {
   const [hoveredStop, setHoveredStop] = useState<StopData | null>(null)
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null)
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
+  const [activeStop, setActiveStop] = useState<StopData | null>(null)
   const [highlightStop, setHighlightStop] = useState<{ id: string; lat: number; lng: number } | null>(null)
   const [flyTo, setFlyTo] = useState<{ lng: number; lat: number; zoom?: number; screenY?: number } | null>(null)
 
@@ -66,6 +68,13 @@ export default function Home() {
     setFlyTo({ lng: stop.lng, lat: stop.lat, zoom: 15 })
   }, [])
 
+  const handleStopClick = useCallback((stop: StopData) => {
+    setActiveStop(stop)
+    setActiveRouteId(null)
+    setHoveredVehicle(null)
+    setHoverPosition(null)
+  }, [])
+
   const handleFitRoute = useCallback((bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => {
     const centerLng = (bounds.minLng + bounds.maxLng) / 2
     const centerLat = (bounds.minLat + bounds.maxLat) / 2
@@ -85,14 +94,16 @@ export default function Home() {
         isDark={isDark}
         filter={filter}
         activeRouteId={activeRouteId}
-        highlightRouteIds={hoveredStop?.routeIds ?? (hoveredVehicle ? [hoveredVehicle.routeId] : [])}
-        highlightStopId={highlightStop?.id ?? null}
+        highlightRouteIds={activeStop?.routeIds ?? hoveredStop?.routeIds ?? (hoveredVehicle ? [hoveredVehicle.routeId] : [])}
+        highlightStopId={activeStop?.id ?? highlightStop?.id ?? null}
         flyTo={flyTo}
         onVehicleClick={handleVehicleClick}
         onVehicleHover={handleVehicleHover}
         onStopHover={handleStopHover}
+        onStopClick={handleStopClick}
         onMapClick={useCallback(() => {
           setActiveRouteId(null)
+          setActiveStop(null)
           setHoveredVehicle(null)
           setHoveredStop(null)
           setHoverPosition(null)
@@ -164,7 +175,7 @@ export default function Home() {
         </div>
       )}
 
-      {activeRouteId && (
+      {activeRouteId && !activeStop && (
         <div className="pointer-events-auto">
           <RoutePanel
             routeId={activeRouteId}
@@ -174,6 +185,19 @@ export default function Home() {
             onFitRoute={handleFitRoute}
             onStopHighlight={setHighlightStop}
             onStopSelect={handleStopSelect}
+          />
+        </div>
+      )}
+
+      {activeStop && (
+        <div className="pointer-events-auto">
+          <StopPanel
+            stop={activeStop}
+            onClose={() => setActiveStop(null)}
+            onRouteSelect={(routeId) => {
+              setActiveStop(null)
+              setActiveRouteId(routeId)
+            }}
           />
         </div>
       )}
