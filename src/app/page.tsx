@@ -15,7 +15,7 @@ export default function Home() {
   const { resolved: theme, toggle: toggleTheme } = useTheme()
   const isDark = theme === 'dark'
 
-  const [filter, setFilter] = useState<VehicleFilter>('all')
+  const [filter, setFilter] = useState<VehicleFilter>('train')
 
   useEffect(() => {
     const saved = localStorage.getItem('vehicleFilter')
