@@ -18,7 +18,7 @@ try {
 
 async function fetchFeed(url: string, apiKey: string): Promise<Buffer> {
   const res = await fetch(url, {
-    headers: { KeyId: apiKey },
+    headers: { KeyId: apiKey, Accept: '*/*' },
     next: { revalidate: 0 },
   })
   if (!res.ok) {
