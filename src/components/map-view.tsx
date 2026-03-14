@@ -44,6 +44,7 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
 
 export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, highlightStopId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
+  const [hoveredStopId, setHoveredStopId] = useState<string | null>(null)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
   const [stops, setStops] = useState<StopData[]>([])
   const prevFlyTo = useRef(flyTo)
@@ -159,6 +160,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
   )
 
   const showStops = viewState.zoom >= 11.5
+  const activeStopId = hoveredStopId ?? highlightStopId
   const stopLayers = useMemo(() => {
     if (!showStops || stops.length === 0) return []
     return [
@@ -173,13 +175,15 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         radiusMaxPixels: 16,
         pickable: true,
         onHover: (info: any) => {
-          onStopHover(info.object as StopData | null, info.object ? { x: info.x, y: info.y } : undefined)
+          const stop = info.object as StopData | null
+          setHoveredStopId(stop?.id ?? null)
+          onStopHover(stop, stop ? { x: info.x, y: info.y } : undefined)
         },
       }),
-      // Visible dots
+      // Visible dots (non-hovered)
       new ScatterplotLayer<StopData>({
         id: 'stop-dots',
-        data: stops,
+        data: activeStopId ? stops.filter(d => d.id !== activeStopId) : stops,
         getPosition: (d) => [d.lng, d.lat],
         getRadius: 30,
         getFillColor: isDark ? [255, 255, 255, 120] : [0, 0, 0, 120],
@@ -189,7 +193,24 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         radiusMinPixels: 2,
         radiusMaxPixels: 5,
         pickable: false,
+        updateTriggers: { data: activeStopId },
       }),
+      // Hovered/highlighted stop (enlarged and bright)
+      ...(activeStopId ? stops.filter(d => d.id === activeStopId).map(d => (
+        new ScatterplotLayer<StopData>({
+          id: 'stop-dot-active',
+          data: [d],
+          getPosition: (s) => [s.lng, s.lat],
+          getRadius: 60,
+          getFillColor: isDark ? [255, 255, 255, 230] : [0, 0, 0, 220],
+          getLineColor: isDark ? [255, 255, 255, 255] : [0, 0, 0, 255],
+          stroked: true,
+          lineWidthMinPixels: 2,
+          radiusMinPixels: 5,
+          radiusMaxPixels: 8,
+          pickable: false,
+        })
+      )) : []),
       ...(viewState.zoom >= 13 ? [
         new TextLayer<StopData>({
           id: 'stop-labels',
@@ -205,35 +226,11 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         }),
       ] : []),
     ]
-  }, [showStops, stops, viewState.zoom, isDark, onStopHover])
-
-  const highlightedStop = useMemo(
-    () => highlightStopId ? stops.find(s => s.id === highlightStopId) : null,
-    [highlightStopId, stops]
-  )
-
-  const stopHighlightLayer = useMemo(() => {
-    if (!highlightedStop) return []
-    return [
-      new ScatterplotLayer<StopData>({
-        id: 'stop-highlight',
-        data: [highlightedStop],
-        getPosition: (d) => [d.lng, d.lat],
-        getRadius: 60,
-        getFillColor: [0, 0, 0, 0],
-        getLineColor: isDark ? [255, 255, 255, 200] : [0, 0, 0, 200],
-        stroked: true,
-        lineWidthMinPixels: 2,
-        radiusMinPixels: 8,
-        radiusMaxPixels: 12,
-        pickable: false,
-      }),
-    ]
-  }, [highlightedStop, isDark])
+  }, [showStops, stops, viewState.zoom, isDark, onStopHover, activeStopId])
 
   const layers = useMemo(
-    () => [...routeLayers, ...stopLayers, ...stopHighlightLayer, ...vehicleLayers],
-    [routeLayers, stopLayers, stopHighlightLayer, vehicleLayers]
+    () => [...routeLayers, ...stopLayers, ...vehicleLayers],
+    [routeLayers, stopLayers, vehicleLayers]
   )
 
   // Fetch and simplify CARTO style: remove minor roads, buildings, rail (we draw our own)
