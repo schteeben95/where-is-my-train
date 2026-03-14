@@ -44,6 +44,8 @@ export default function Home() {
 
   const handleCloseRoute = useCallback(() => {
     setActiveRouteId(null)
+    setHoveredVehicle(null)
+    setHoverPosition(null)
   }, [])
 
   const handleVehicleSelect = useCallback((vehicle: Vehicle) => {
@@ -73,7 +75,11 @@ export default function Home() {
         flyTo={flyTo}
         onVehicleClick={handleVehicleClick}
         onVehicleHover={handleVehicleHover}
-        onMapClick={handleCloseRoute}
+        onMapClick={useCallback(() => {
+          setActiveRouteId(null)
+          setHoveredVehicle(null)
+          setHoverPosition(null)
+        }, [])}
       />
 
       <div className="absolute inset-0 pointer-events-none z-10">
