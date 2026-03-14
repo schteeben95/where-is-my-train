@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { MapView } from '@/components/map-view'
 import { FilterBar } from '@/components/filter-bar'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -15,13 +15,12 @@ export default function Home() {
   const { resolved: theme, toggle: toggleTheme } = useTheme()
   const isDark = theme === 'dark'
 
-  const [filter, setFilter] = useState<VehicleFilter>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('vehicleFilter')
-      if (saved === 'train' || saved === 'tram' || saved === 'all') return saved
-    }
-    return 'all'
-  })
+  const [filter, setFilter] = useState<VehicleFilter>('all')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('vehicleFilter')
+    if (saved === 'train' || saved === 'tram' || saved === 'all') setFilter(saved)
+  }, [])
   const { vehicles, lastUpdated, loading, error } = useVehicles(filter)
 
   const [hoveredVehicle, setHoveredVehicle] = useState<Vehicle | null>(null)
