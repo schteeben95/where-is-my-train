@@ -77,14 +77,11 @@ export default function Home() {
       />
 
       <div className="absolute inset-0 pointer-events-none z-10">
-        <div className="absolute top-4 left-4 pointer-events-auto">
+        <div className="absolute top-4 left-4 right-4 pointer-events-auto flex items-center justify-between gap-2">
           <FilterBar filter={filter} onFilterChange={(f) => {
             setFilter(f)
             localStorage.setItem('vehicleFilter', f)
           }} />
-        </div>
-
-        <div className="absolute top-4 right-4 pointer-events-auto">
           <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
         </div>
 
