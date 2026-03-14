@@ -43,5 +43,11 @@
     "typescript": "^5",
     "unzipper": "^0.12.3",
     "vitest": "^4.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "protobufjs"
+    ]
   }
 }
