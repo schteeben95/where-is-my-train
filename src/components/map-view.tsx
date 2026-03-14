@@ -141,7 +141,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
     [filteredRoutes, effectiveHighlight, isDark]
   )
 
-  const showStops = viewState.zoom >= 10
+  const showStops = viewState.zoom >= 11.5
   const stopLayers = useMemo(() => {
     if (!showStops || stops.length === 0) return []
     return [
