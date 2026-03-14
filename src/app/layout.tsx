@@ -9,6 +9,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://where-is-my-train.stevenhan.net'),
   title: 'Where is my train? - Live Melbourne Transit',
   description: 'Real-time positions of all trains and trams in Melbourne',
   openGraph: {
