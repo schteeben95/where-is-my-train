@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { MapView, type StopData } from '@/components/map-view'
 import { StopPanel } from '@/components/stop-panel'
 import { FilterBar } from '@/components/filter-bar'
@@ -33,6 +33,8 @@ export default function Home() {
   const [highlightStop, setHighlightStop] = useState<{ id: string; lat: number; lng: number } | null>(null)
   const [panelHighlightRouteIds, setPanelHighlightRouteIds] = useState<string[]>([])
   const [flyTo, setFlyTo] = useState<{ lng: number; lat: number; zoom?: number; screenY?: number } | null>(null)
+  const viewStateRef = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null)
+  const savedViewState = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null)
 
   const handleVehicleHover = useCallback((vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => {
     setHoveredVehicle(vehicle)
@@ -102,6 +104,7 @@ export default function Home() {
         onVehicleHover={handleVehicleHover}
         onStopHover={handleStopHover}
         onStopClick={handleStopClick}
+        viewStateRef={viewStateRef}
         onMapClick={useCallback(() => {
           setActiveRouteId(null)
           setActiveStop(null)
@@ -186,7 +189,14 @@ export default function Home() {
             onFitRoute={handleFitRoute}
             onStopHighlight={setHighlightStop}
             onStopSelect={handleStopSelect}
-            onBack={activeStop ? () => setActiveRouteId(null) : undefined}
+            autoFit={!!activeStop}
+            onBack={activeStop ? () => {
+              setActiveRouteId(null)
+              if (savedViewState.current) {
+                setFlyTo({ lng: savedViewState.current.longitude, lat: savedViewState.current.latitude, zoom: savedViewState.current.zoom })
+                savedViewState.current = null
+              }
+            } : undefined}
           />
         </div>
       )}
@@ -198,6 +208,9 @@ export default function Home() {
             onClose={() => { setActiveStop(null); setPanelHighlightRouteIds([]) }}
             onRouteSelect={(routeId) => {
               setPanelHighlightRouteIds([])
+              if (viewStateRef.current) {
+                savedViewState.current = { ...viewStateRef.current }
+              }
               setActiveRouteId(routeId)
             }}
             onRouteHover={setPanelHighlightRouteIds}

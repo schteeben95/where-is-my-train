@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef, type MutableRefObject } from 'react'
 import { Map } from 'react-map-gl/maplibre'
 import DeckGL from '@deck.gl/react'
 import { FlyToInterpolator } from '@deck.gl/core'
@@ -34,6 +34,7 @@ interface MapViewProps {
   onStopHover: (stop: StopData | null, screenCoords?: { x: number; y: number }) => void
   onStopClick: (stop: StopData) => void
   onMapClick: () => void
+  viewStateRef?: MutableRefObject<{ longitude: number; latitude: number; zoom: number } | null>
 }
 
 const INITIAL_VIEW_STATE: Record<string, any> = {
@@ -44,7 +45,7 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, highlightStopId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onStopClick, onMapClick }: MapViewProps) {
+export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, highlightStopId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onStopClick, onMapClick, viewStateRef }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
   const [hoveredStopId, setHoveredStopId] = useState<string | null>(null)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
@@ -152,7 +153,8 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
 
   const handleViewStateChange = useCallback(({ viewState }: any) => {
     setViewState(viewState)
-  }, [])
+    if (viewStateRef) viewStateRef.current = viewState
+  }, [viewStateRef])
 
   const vehicleLayers = useMemo(
     () => createVehicleLayers(vehicles, viewState.zoom, isDark, onVehicleClick, onVehicleHover),

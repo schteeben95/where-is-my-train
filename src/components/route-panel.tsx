@@ -12,6 +12,7 @@ interface RoutePanelProps {
   onFitRoute: (bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => void
   onStopHighlight: (stop: { id: string; lat: number; lng: number } | null) => void
   onStopSelect: (stop: { lat: number; lng: number }) => void
+  autoFit?: boolean
   onBack?: () => void
 }
 
@@ -66,7 +67,7 @@ function VehicleCard({ vehicle, onSelect }: { vehicle: Vehicle; onSelect: (v: Ve
   )
 }
 
-export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight, onStopSelect, onBack }: RoutePanelProps) {
+export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight, onStopSelect, autoFit, onBack }: RoutePanelProps) {
   const [route, setRoute] = useState<RouteShape | null>(null)
   const [loading, setLoading] = useState(true)
   const [showStops, setShowStops] = useState(false)
@@ -79,6 +80,16 @@ export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitR
       .then(data => {
         setRoute(data)
         setLoading(false)
+        if (autoFit && data.coordinates?.length > 0) {
+          let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+          for (const [lng, lat] of data.coordinates) {
+            if (lng < minLng) minLng = lng
+            if (lat < minLat) minLat = lat
+            if (lng > maxLng) maxLng = lng
+            if (lat > maxLat) maxLat = lat
+          }
+          onFitRoute({ minLng, minLat, maxLng, maxLat })
+        }
       })
       .catch(() => setLoading(false))
   }, [routeId])
