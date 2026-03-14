@@ -45,8 +45,8 @@ export function createVehicleLayers(
         radiusMinPixels: 4,
         radiusMaxPixels: 10,
         pickable: true,
-        onClick: ({ object, x, y }: { object: Vehicle; x: number; y: number }) => {
-          if (object) onVehicleClick(object, { x, y })
+        onClick: (info: any) => {
+          if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
         },
         transitions: {
           getPosition: { duration: 1000, type: 'interpolation' },
@@ -68,8 +68,8 @@ export function createVehicleLayers(
       radiusMinPixels: 6,
       radiusMaxPixels: 14,
       pickable: true,
-      onClick: ({ object }: { object: Vehicle }) => {
-        if (object) onVehicleClick(object)
+      onClick: (info: any) => {
+        if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
       },
       transitions: {
         getPosition: { duration: 1000, type: 'interpolation' },
