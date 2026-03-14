@@ -91,7 +91,7 @@ export function createVehicleLayers(
             getRadius: 600,
             getFillColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 40],
             radiusMinPixels: 8,
-            radiusMaxPixels: 20,
+            radiusMaxPixels: 14,
             pickable: false,
           })
         : null,
@@ -103,7 +103,7 @@ export function createVehicleLayers(
         getRadius: 200,
         getFillColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 220],
         radiusMinPixels: 4,
-        radiusMaxPixels: 10,
+        radiusMaxPixels: 7,
         pickable: true,
         onClick: (info: any) => {
           if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
@@ -140,8 +140,8 @@ export function createVehicleLayers(
       getLineColor: [255, 255, 255, 180],
       lineWidthMinPixels: 1,
       stroked: true,
-      radiusMinPixels: 6,
-      radiusMaxPixels: 14,
+      radiusMinPixels: 5,
+      radiusMaxPixels: 8,
       pickable: true,
       onClick: (info: any) => {
         if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
