@@ -18,7 +18,7 @@ export function FilterBar({ filter, onFilterChange }: FilterBarProps) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-lg font-light tracking-tight dark:text-white/90 text-black/80 mr-1">
-        Where Is My Train
+        Where is my train?
       </span>
       <GlassPanel variant="pill" className="flex p-1 gap-0.5">
         {filters.map(f => (
