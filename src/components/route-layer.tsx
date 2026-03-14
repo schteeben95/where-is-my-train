@@ -19,13 +19,13 @@ function hexToRgb(hex: string): [number, number, number] {
 
 export function createAllRouteLayers(
   routes: RouteData[],
-  activeRouteId: string | null,
+  highlightRouteIds: Set<string>,
   isDark: boolean
 ) {
   const layers: (PathLayer | null)[] = []
 
   // Background routes (faded)
-  const bgRoutes = routes.filter(r => r.id !== activeRouteId)
+  const bgRoutes = routes.filter(r => !highlightRouteIds.has(r.id))
   if (bgRoutes.length > 0) {
     layers.push(
       new PathLayer<RouteData>({
@@ -43,33 +43,32 @@ export function createAllRouteLayers(
     )
   }
 
-  // Active route (full opacity with glow)
-  if (activeRouteId) {
-    const activeRoute = routes.find(r => r.id === activeRouteId)
-    if (activeRoute) {
-      const rgb = hexToRgb(activeRoute.color)
+  // Active/highlighted routes (full opacity with glow)
+  if (highlightRouteIds.size > 0) {
+    const activeRoutes = routes.filter(r => highlightRouteIds.has(r.id))
 
-      if (isDark) {
-        layers.push(
-          new PathLayer<RouteData>({
-            id: 'route-active-glow',
-            data: [activeRoute],
-            getPath: (d) => d.coordinates,
-            getColor: [...rgb, 50],
-            getWidth: 20,
-            widthMinPixels: 8,
-            capRounded: true,
-            jointRounded: true,
-          })
-        )
-      }
+    if (isDark && activeRoutes.length > 0) {
+      layers.push(
+        new PathLayer<RouteData>({
+          id: 'route-active-glow',
+          data: activeRoutes,
+          getPath: (d) => d.coordinates,
+          getColor: (d) => [...hexToRgb(d.color), 50],
+          getWidth: 20,
+          widthMinPixels: 8,
+          capRounded: true,
+          jointRounded: true,
+        })
+      )
+    }
 
+    if (activeRoutes.length > 0) {
       layers.push(
         new PathLayer<RouteData>({
           id: 'route-active-line',
-          data: [activeRoute],
+          data: activeRoutes,
           getPath: (d) => d.coordinates,
-          getColor: [...rgb, isDark ? 200 : 220],
+          getColor: (d) => [...hexToRgb(d.color), isDark ? 200 : 220],
           getWidth: 10,
           widthMinPixels: 3,
           widthMaxPixels: 16,

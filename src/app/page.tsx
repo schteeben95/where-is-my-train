@@ -80,7 +80,7 @@ export default function Home() {
         isDark={isDark}
         filter={filter}
         activeRouteId={activeRouteId}
-        highlightRouteId={hoveredVehicle?.routeId ?? null}
+        highlightRouteIds={hoveredStop?.routeIds ?? (hoveredVehicle ? [hoveredVehicle.routeId] : [])}
         flyTo={flyTo}
         onVehicleClick={handleVehicleClick}
         onVehicleHover={handleVehicleHover}

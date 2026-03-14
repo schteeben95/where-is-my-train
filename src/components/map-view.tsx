@@ -17,6 +17,7 @@ export interface StopData {
   lat: number
   lng: number
   routes: string[]
+  routeIds: string[]
 }
 
 interface MapViewProps {
@@ -24,7 +25,7 @@ interface MapViewProps {
   isDark: boolean
   filter: VehicleFilter
   activeRouteId: string | null
-  highlightRouteId: string | null
+  highlightRouteIds: string[]
   flyTo: { lng: number; lat: number; zoom?: number; screenY?: number } | null
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
   onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
@@ -40,7 +41,7 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
+export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
   const [stops, setStops] = useState<StopData[]>([])
@@ -66,9 +67,10 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         const lineName = routeNameById[routeId] || routeId
         for (const stop of stops) {
           if (!seen[stop.id]) {
-            seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng, routes: [lineName] }
-          } else if (!seen[stop.id].routes.includes(lineName)) {
-            seen[stop.id].routes.push(lineName)
+            seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng, routes: [lineName], routeIds: [routeId] }
+          } else {
+            if (!seen[stop.id].routes.includes(lineName)) seen[stop.id].routes.push(lineName)
+            if (!seen[stop.id].routeIds.includes(routeId)) seen[stop.id].routeIds.push(routeId)
           }
         }
       }
@@ -139,7 +141,11 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
     [vehicles, viewState.zoom, isDark, onVehicleClick, onVehicleHover]
   )
 
-  const effectiveHighlight = activeRouteId ?? highlightRouteId
+  const effectiveHighlightSet = useMemo(() => {
+    const ids = new Set<string>(highlightRouteIds)
+    if (activeRouteId) ids.add(activeRouteId)
+    return ids
+  }, [activeRouteId, highlightRouteIds])
 
   const filteredRoutes = useMemo(
     () => filter === 'all' ? allRoutes : allRoutes.filter(r => r.type === filter),
@@ -147,8 +153,8 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
   )
 
   const routeLayers = useMemo(
-    () => createAllRouteLayers(filteredRoutes, effectiveHighlight, isDark),
-    [filteredRoutes, effectiveHighlight, isDark]
+    () => createAllRouteLayers(filteredRoutes, effectiveHighlightSet, isDark),
+    [filteredRoutes, effectiveHighlightSet, isDark]
   )
 
   const showStops = viewState.zoom >= 11.5
