@@ -18,22 +18,21 @@ export default function Home() {
   const [filter, setFilter] = useState<VehicleFilter>('all')
   const { vehicles, lastUpdated, loading, error } = useVehicles(filter)
 
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
-  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null)
+  const [hoveredVehicle, setHoveredVehicle] = useState<Vehicle | null>(null)
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null)
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
   const [activeRouteData, setActiveRouteData] = useState<{ coordinates: [number, number][]; color: string } | null>(null)
 
-  const handleVehicleClick = useCallback((vehicle: Vehicle, screenCoords?: { x: number; y: number }) => {
-    setSelectedVehicle(vehicle)
-    setPopupPosition(screenCoords || { x: window.innerWidth / 2, y: window.innerHeight / 2 })
-    // Immediately show the route on the map
-    setActiveRouteId(vehicle.routeId)
+  const handleVehicleHover = useCallback((vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => {
+    setHoveredVehicle(vehicle)
+    setHoverPosition(screenCoords || null)
   }, [])
 
-  const handleViewRoute = useCallback((routeId: string) => {
-    setActiveRouteId(routeId)
-    setSelectedVehicle(null)
-    setPopupPosition(null)
+  const handleVehicleClick = useCallback((vehicle: Vehicle) => {
+    // Click opens the full route panel and hides the hover popup
+    setHoveredVehicle(null)
+    setHoverPosition(null)
+    setActiveRouteId(vehicle.routeId)
   }, [])
 
   // Fetch route shape when a route is selected
@@ -50,11 +49,6 @@ export default function Home() {
       .catch(() => setActiveRouteData(null))
   }, [activeRouteId])
 
-  const handleClosePopup = useCallback(() => {
-    setSelectedVehicle(null)
-    setPopupPosition(null)
-  }, [])
-
   const handleCloseRoute = useCallback(() => {
     setActiveRouteId(null)
     setActiveRouteData(null)
@@ -66,6 +60,7 @@ export default function Home() {
         vehicles={vehicles}
         isDark={isDark}
         onVehicleClick={handleVehicleClick}
+        onVehicleHover={handleVehicleHover}
         activeRoute={activeRouteData}
       />
 
@@ -87,19 +82,15 @@ export default function Home() {
         </div>
       </div>
 
-      {selectedVehicle && popupPosition && (
+      {hoveredVehicle && hoverPosition && !activeRouteId && (
         <div
-          className="absolute z-50 pointer-events-auto"
+          className="absolute z-50 pointer-events-none"
           style={{
-            left: `${Math.min(popupPosition.x, window.innerWidth - 300)}px`,
-            top: `${Math.max(popupPosition.y - 200, 10)}px`,
+            left: `${Math.min(hoverPosition.x + 12, window.innerWidth - 300)}px`,
+            top: `${Math.max(hoverPosition.y - 80, 10)}px`,
           }}
         >
-          <VehiclePopup
-            vehicle={selectedVehicle}
-            onClose={handleClosePopup}
-            onViewRoute={handleViewRoute}
-          />
+          <VehiclePopup vehicle={hoveredVehicle} />
         </div>
       )}
 

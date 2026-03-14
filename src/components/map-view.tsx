@@ -18,6 +18,7 @@ interface MapViewProps {
   vehicles: Vehicle[]
   isDark: boolean
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
+  onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
   activeRoute: RouteOverlay | null
 }
 
@@ -29,7 +30,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, onVehicleClick, activeRoute }: MapViewProps) {
+export function MapView({ vehicles, isDark, onVehicleClick, onVehicleHover, activeRoute }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
 
   const handleViewStateChange = useCallback(({ viewState }: any) => {
@@ -37,8 +38,8 @@ export function MapView({ vehicles, isDark, onVehicleClick, activeRoute }: MapVi
   }, [])
 
   const vehicleLayers = useMemo(
-    () => createVehicleLayers(vehicles, viewState.zoom, isDark, onVehicleClick),
-    [vehicles, viewState.zoom, isDark, onVehicleClick]
+    () => createVehicleLayers(vehicles, viewState.zoom, isDark, onVehicleClick, onVehicleHover),
+    [vehicles, viewState.zoom, isDark, onVehicleClick, onVehicleHover]
   )
 
   const routeLayers = useMemo(

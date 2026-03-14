@@ -39,7 +39,8 @@ export function createVehicleLayers(
   vehicles: Vehicle[],
   zoom: number,
   isDark: boolean,
-  onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
+  onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void,
+  onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
 ) {
   const isZoomedIn = zoom >= ZOOM_THRESHOLD_LOD
   const vehiclesWithBearing = vehicles.filter(v => v.bearing !== 0)
@@ -71,6 +72,9 @@ export function createVehicleLayers(
         pickable: true,
         onClick: (info: any) => {
           if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
+        },
+        onHover: (info: any) => {
+          onVehicleHover(info.object as Vehicle | null, info.object ? { x: info.x, y: info.y } : undefined)
         },
       }),
       // Direction arrows - positioned ahead of the dot
@@ -106,6 +110,9 @@ export function createVehicleLayers(
       pickable: true,
       onClick: (info: any) => {
         if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
+      },
+      onHover: (info: any) => {
+        onVehicleHover(info.object as Vehicle | null, info.object ? { x: info.x, y: info.y } : undefined)
       },
     }),
     // Direction arrows - positioned ahead of the dot
