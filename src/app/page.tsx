@@ -85,7 +85,7 @@ export default function Home() {
           <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
         </div>
 
-        <div className={`absolute left-1/2 -translate-x-1/2 pointer-events-auto transition-all duration-500 ${activeRouteId ? 'bottom-14' : 'bottom-4'}`}>
+        <div className={`absolute left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 pointer-events-auto transition-all duration-500 ${activeRouteId ? 'bottom-14' : 'bottom-4'}`}>
           <InfoBar
             vehicleCount={vehicles.length}
             lastUpdated={lastUpdated}
