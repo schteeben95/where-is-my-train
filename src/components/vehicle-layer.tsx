@@ -27,6 +27,14 @@ function createArrowIconMapping() {
 
 const arrowIcon = createArrowIconMapping()
 
+// Bearing is degrees clockwise from north.
+// Screen coords: +x = right, +y = down.
+// So: dx = sin(bearing) * dist, dy = -cos(bearing) * dist
+function bearingToPixelOffset(bearing: number, dist: number): [number, number] {
+  const rad = (bearing * Math.PI) / 180
+  return [Math.sin(rad) * dist, -Math.cos(rad) * dist]
+}
+
 export function createVehicleLayers(
   vehicles: Vehicle[],
   zoom: number,
@@ -65,7 +73,7 @@ export function createVehicleLayers(
           if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
         },
       }),
-      // Direction arrows
+      // Direction arrows - positioned ahead of the dot
       new IconLayer({
         id: 'vehicle-arrows',
         data: vehiclesWithBearing,
@@ -73,10 +81,10 @@ export function createVehicleLayers(
         getIcon: () => 'arrow',
         iconAtlas: arrowIcon.url,
         iconMapping: arrowIcon.mapping,
-        getSize: 16,
+        getSize: 14,
         getAngle: (d: Vehicle) => 360 - d.bearing,
         getColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 200],
-        getPixelOffset: [0, -14],
+        getPixelOffset: (d: Vehicle) => bearingToPixelOffset(d.bearing, 14),
         pickable: false,
       }),
     ].filter(Boolean)
@@ -100,7 +108,7 @@ export function createVehicleLayers(
         if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
       },
     }),
-    // Direction arrows (larger when zoomed in)
+    // Direction arrows - positioned ahead of the dot
     new IconLayer({
       id: 'vehicle-arrows-zoomed',
       data: vehiclesWithBearing,
@@ -108,10 +116,10 @@ export function createVehicleLayers(
       getIcon: () => 'arrow',
       iconAtlas: arrowIcon.url,
       iconMapping: arrowIcon.mapping,
-      getSize: 20,
+      getSize: 18,
       getAngle: (d: Vehicle) => 360 - d.bearing,
       getColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 220],
-      getPixelOffset: [0, -18],
+      getPixelOffset: (d: Vehicle) => bearingToPixelOffset(d.bearing, 18),
       pickable: false,
     }),
     // Route name labels
