@@ -146,6 +146,21 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
   const stopLayers = useMemo(() => {
     if (!showStops || stops.length === 0) return []
     return [
+      // Invisible hit area for easier hover targeting
+      new ScatterplotLayer<StopData>({
+        id: 'stop-hit-area',
+        data: stops,
+        getPosition: (d) => [d.lng, d.lat],
+        getRadius: 30,
+        getFillColor: [0, 0, 0, 0],
+        radiusMinPixels: 12,
+        radiusMaxPixels: 16,
+        pickable: true,
+        onHover: (info: any) => {
+          onStopHover(info.object as StopData | null, info.object ? { x: info.x, y: info.y } : undefined)
+        },
+      }),
+      // Visible dots
       new ScatterplotLayer<StopData>({
         id: 'stop-dots',
         data: stops,
@@ -157,10 +172,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         lineWidthMinPixels: 1,
         radiusMinPixels: 2,
         radiusMaxPixels: 5,
-        pickable: true,
-        onHover: (info: any) => {
-          onStopHover(info.object as StopData | null, info.object ? { x: info.x, y: info.y } : undefined)
-        },
+        pickable: false,
       }),
       ...(viewState.zoom >= 13 ? [
         new TextLayer<StopData>({
