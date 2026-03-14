@@ -212,7 +212,10 @@ export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitR
 
           {!loading && showStops && route && route.stops.length > 0 && (
             <div className="p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1">
+              <div
+                className="grid grid-flow-col gap-x-4 gap-y-1"
+                style={{ gridTemplateRows: `repeat(${Math.ceil(route.stops.length / 3)}, minmax(0, 1fr))` }}
+              >
                 {route.stops.map((stop, i) => (
                   <div
                     key={stop.id}
