@@ -62,7 +62,17 @@ export async function GET() {
     }
 
     const allRaw = [...metroRaw, ...tramRaw]
-    const vehicles = enrichVehicles(allRaw, lookup)
+    const enriched = enrichVehicles(allRaw, lookup)
+
+    // Deduplicate by vehicle ID, keeping the most recent entry
+    const seen = new Map<string, typeof enriched[number]>()
+    for (const v of enriched) {
+      const existing = seen.get(v.id)
+      if (!existing || v.timestamp > existing.timestamp) {
+        seen.set(v.id, v)
+      }
+    }
+    const vehicles = Array.from(seen.values()).sort((a, b) => a.id.localeCompare(b.id))
 
     const response: VehiclesResponse = {
       timestamp: Math.floor(Date.now() / 1000),

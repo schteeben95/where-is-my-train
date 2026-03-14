@@ -31,9 +31,6 @@ export function createVehicleLayers(
             radiusMinPixels: 8,
             radiusMaxPixels: 20,
             pickable: false,
-            transitions: {
-              getPosition: { duration: 1000, type: 'interpolation' },
-            },
           })
         : null,
       new ScatterplotLayer({
@@ -47,9 +44,6 @@ export function createVehicleLayers(
         pickable: true,
         onClick: (info: any) => {
           if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
-        },
-        transitions: {
-          getPosition: { duration: 1000, type: 'interpolation' },
         },
       }),
     ].filter(Boolean)
