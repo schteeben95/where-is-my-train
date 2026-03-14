@@ -26,6 +26,7 @@ interface MapViewProps {
   filter: VehicleFilter
   activeRouteId: string | null
   highlightRouteIds: string[]
+  highlightStopId: string | null
   flyTo: { lng: number; lat: number; zoom?: number; screenY?: number } | null
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
   onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
@@ -41,7 +42,7 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
+export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteIds, highlightStopId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
   const [stops, setStops] = useState<StopData[]>([])
@@ -206,9 +207,33 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
     ]
   }, [showStops, stops, viewState.zoom, isDark, onStopHover])
 
+  const highlightedStop = useMemo(
+    () => highlightStopId ? stops.find(s => s.id === highlightStopId) : null,
+    [highlightStopId, stops]
+  )
+
+  const stopHighlightLayer = useMemo(() => {
+    if (!highlightedStop) return []
+    return [
+      new ScatterplotLayer<StopData>({
+        id: 'stop-highlight',
+        data: [highlightedStop],
+        getPosition: (d) => [d.lng, d.lat],
+        getRadius: 60,
+        getFillColor: [0, 0, 0, 0],
+        getLineColor: isDark ? [255, 255, 255, 200] : [0, 0, 0, 200],
+        stroked: true,
+        lineWidthMinPixels: 2,
+        radiusMinPixels: 8,
+        radiusMaxPixels: 12,
+        pickable: false,
+      }),
+    ]
+  }, [highlightedStop, isDark])
+
   const layers = useMemo(
-    () => [...routeLayers, ...stopLayers, ...vehicleLayers],
-    [routeLayers, stopLayers, vehicleLayers]
+    () => [...routeLayers, ...stopLayers, ...stopHighlightLayer, ...vehicleLayers],
+    [routeLayers, stopLayers, stopHighlightLayer, vehicleLayers]
   )
 
   // Fetch and simplify CARTO style: remove minor roads, buildings, rail (we draw our own)

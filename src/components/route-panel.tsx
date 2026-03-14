@@ -10,6 +10,7 @@ interface RoutePanelProps {
   onClose: () => void
   onVehicleSelect: (vehicle: Vehicle) => void
   onFitRoute: (bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => void
+  onStopHighlight: (stop: { id: string; lat: number; lng: number } | null) => void
 }
 
 const CITY_TERMINI = ['flinders street', 'flinders st', 'southern cross', 'parliament']
@@ -63,7 +64,7 @@ function VehicleCard({ vehicle, onSelect }: { vehicle: Vehicle; onSelect: (v: Ve
   )
 }
 
-export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute }: RoutePanelProps) {
+export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight }: RoutePanelProps) {
   const [route, setRoute] = useState<RouteShape | null>(null)
   const [loading, setLoading] = useState(true)
   const [showStops, setShowStops] = useState(false)
@@ -213,7 +214,13 @@ export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitR
             <div className="p-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1">
                 {route.stops.map((stop, i) => (
-                  <div key={stop.id} className="flex items-center gap-2 py-1">
+                  <div
+                    key={stop.id}
+                    className="flex items-center gap-2 py-1 rounded-lg px-1 -mx-1
+                      hover:bg-white/10 transition-colors duration-150 cursor-default"
+                    onMouseEnter={() => onStopHighlight({ id: stop.id, lat: stop.lat, lng: stop.lng })}
+                    onMouseLeave={() => onStopHighlight(null)}
+                  >
                     <span className="text-xs dark:text-white/30 text-black/25 w-4 text-right shrink-0">{i + 1}</span>
                     <span className="text-sm dark:text-white/60 text-black/50 truncate">{stop.name}</span>
                   </div>

@@ -28,6 +28,7 @@ export default function Home() {
   const [hoveredStop, setHoveredStop] = useState<StopData | null>(null)
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null)
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
+  const [highlightStop, setHighlightStop] = useState<{ id: string; lat: number; lng: number } | null>(null)
   const [flyTo, setFlyTo] = useState<{ lng: number; lat: number; zoom?: number; screenY?: number } | null>(null)
 
   const handleVehicleHover = useCallback((vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => {
@@ -81,6 +82,7 @@ export default function Home() {
         filter={filter}
         activeRouteId={activeRouteId}
         highlightRouteIds={hoveredStop?.routeIds ?? (hoveredVehicle ? [hoveredVehicle.routeId] : [])}
+        highlightStopId={highlightStop?.id ?? null}
         flyTo={flyTo}
         onVehicleClick={handleVehicleClick}
         onVehicleHover={handleVehicleHover}
@@ -166,6 +168,7 @@ export default function Home() {
             onClose={handleCloseRoute}
             onVehicleSelect={handleVehicleSelect}
             onFitRoute={handleFitRoute}
+            onStopHighlight={setHighlightStop}
           />
         </div>
       )}
