@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# GTFS generated data
+.gtfs-tmp/
+public/data/
+src/lib/gtfs-lookup.json

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "fetch-gtfs": "tsx scripts/fetch-gtfs.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.11",
@@ -30,12 +31,16 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/unzipper": "^0.10.11",
     "@vitejs/plugin-react": "^6.0.1",
+    "csv-parse": "^6.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jsdom": "^28.1.0",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
+    "unzipper": "^0.12.3",
     "vitest": "^4.1.0"
   }
 }
