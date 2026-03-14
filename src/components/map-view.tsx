@@ -124,7 +124,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
   )
 
   // Fetch and simplify CARTO style: remove minor roads, buildings, rail (we draw our own)
-  const [mapStyle, setMapStyle] = useState<string | object>(
+  const [mapStyle, setMapStyle] = useState<any>(
     isDark ? CARTO_TILE_URLS.dark : CARTO_TILE_URLS.light
   )
   const prevTheme = useRef(isDark)
