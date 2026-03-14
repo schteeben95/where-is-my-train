@@ -19,6 +19,7 @@ interface MapViewProps {
   isDark: boolean
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
   onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
+  onMapClick: () => void
   activeRoute: RouteOverlay | null
 }
 
@@ -30,7 +31,7 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, onVehicleClick, onVehicleHover, activeRoute }: MapViewProps) {
+export function MapView({ vehicles, isDark, onVehicleClick, onVehicleHover, onMapClick, activeRoute }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
 
   const handleViewStateChange = useCallback(({ viewState }: any) => {
@@ -64,6 +65,9 @@ export function MapView({ vehicles, isDark, onVehicleClick, onVehicleHover, acti
         controller={true}
         layers={layers}
         getCursor={({ isHovering }) => (isHovering ? 'pointer' : 'grab')}
+        onClick={(info: any) => {
+          if (!info.object) onMapClick()
+        }}
       >
         <Map
           mapStyle={mapStyle}

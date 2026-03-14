@@ -61,6 +61,7 @@ export default function Home() {
         isDark={isDark}
         onVehicleClick={handleVehicleClick}
         onVehicleHover={handleVehicleHover}
+        onMapClick={handleCloseRoute}
         activeRoute={activeRouteData}
       />
 
