@@ -27,11 +27,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Dim basemap in dark mode so transit overlays stand out */
-.dark .maplibregl-canvas {
-  filter: brightness(0.55) contrast(1.1);
-}
-
 /* Liquid Glass Design System - adapted from jh3y's displacement glass */
 
 /* Dark mode (default) */

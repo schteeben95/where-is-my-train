@@ -153,6 +153,26 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
       .then(res => res.json())
       .then(style => {
         style.layers = style.layers.filter((l: any) => !HIDDEN_LAYERS.has(l.id))
+        // Darken the basemap in dark mode so transit overlays stand out
+        if (isDark) {
+          for (const layer of style.layers) {
+            const p = layer.paint
+            if (!p) continue
+            // Darken fill colors
+            if (p['background-color']) p['background-color'] = '#050508'
+            if (p['fill-color'] && typeof p['fill-color'] === 'string') {
+              p['fill-opacity'] = (p['fill-opacity'] ?? 1) * 0.6
+            }
+            // Reduce road/boundary line opacity
+            if (p['line-color'] && typeof p['line-color'] === 'string') {
+              p['line-opacity'] = (p['line-opacity'] ?? 1) * 0.4
+            }
+            // Dim text labels
+            if (p['text-color'] && typeof p['text-color'] === 'string') {
+              p['text-opacity'] = (p['text-opacity'] ?? 1) * 0.5
+            }
+          }
+        }
         setMapStyle(style)
       })
       .catch(() => setMapStyle(url))
