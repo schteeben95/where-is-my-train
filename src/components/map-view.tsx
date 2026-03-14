@@ -64,20 +64,30 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
       for (const r of trainRoutes) {
         routeNameById[r.id] = r.name.replace(/ - City$/, '')
       }
-      const seen: Record<string, StopData> = {}
+      // Group by station name to merge platforms into single stops
+      const byName: Record<string, { lats: number[]; lngs: number[]; routes: string[]; routeIds: string[] }> = {}
       for (const [routeId, stops] of Object.entries(routeStops)) {
         if (!trainRouteIds.has(routeId)) continue
         const lineName = routeNameById[routeId] || routeId
         for (const stop of stops) {
-          if (!seen[stop.id]) {
-            seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng, routes: [lineName], routeIds: [routeId] }
+          if (!byName[stop.name]) {
+            byName[stop.name] = { lats: [stop.lat], lngs: [stop.lng], routes: [lineName], routeIds: [routeId] }
           } else {
-            if (!seen[stop.id].routes.includes(lineName)) seen[stop.id].routes.push(lineName)
-            if (!seen[stop.id].routeIds.includes(routeId)) seen[stop.id].routeIds.push(routeId)
+            byName[stop.name].lats.push(stop.lat)
+            byName[stop.name].lngs.push(stop.lng)
+            if (!byName[stop.name].routes.includes(lineName)) byName[stop.name].routes.push(lineName)
+            if (!byName[stop.name].routeIds.includes(routeId)) byName[stop.name].routeIds.push(routeId)
           }
         }
       }
-      setStops(Object.values(seen))
+      setStops(Object.entries(byName).map(([name, data]) => ({
+        id: name,
+        name,
+        lat: data.lats.reduce((a, b) => a + b, 0) / data.lats.length,
+        lng: data.lngs.reduce((a, b) => a + b, 0) / data.lngs.length,
+        routes: data.routes,
+        routeIds: data.routeIds,
+      })))
     }).catch(() => console.warn('Could not load routes/stops data'))
   }, [])
 
