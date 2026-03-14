@@ -123,7 +123,40 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
     [routeLayers, vehicleLayers]
   )
 
-  const mapStyle = isDark ? CARTO_TILE_URLS.dark : CARTO_TILE_URLS.light
+  // Fetch and simplify CARTO style: remove minor roads, buildings, rail (we draw our own)
+  const [mapStyle, setMapStyle] = useState<string | object>(
+    isDark ? CARTO_TILE_URLS.dark : CARTO_TILE_URLS.light
+  )
+  const prevTheme = useRef(isDark)
+
+  const HIDDEN_LAYERS = new Set([
+    'road_service_case', 'road_service_fill',
+    'road_minor_case', 'road_minor_fill',
+    'road_path',
+    'tunnel_service_case', 'tunnel_service_fill',
+    'tunnel_minor_case', 'tunnel_minor_fill',
+    'tunnel_path',
+    'tunnel_rail', 'tunnel_rail_dash',
+    'bridge_service_case', 'bridge_service_fill',
+    'bridge_minor_case', 'bridge_minor_fill',
+    'bridge_path',
+    'rail', 'rail_dash',
+    'building', 'building-top',
+    'roadname_minor', 'housenumber',
+    'aeroway-runway', 'aeroway-taxiway',
+  ])
+
+  useEffect(() => {
+    const url = isDark ? CARTO_TILE_URLS.dark : CARTO_TILE_URLS.light
+    prevTheme.current = isDark
+    fetch(url)
+      .then(res => res.json())
+      .then(style => {
+        style.layers = style.layers.filter((l: any) => !HIDDEN_LAYERS.has(l.id))
+        setMapStyle(style)
+      })
+      .catch(() => setMapStyle(url))
+  }, [isDark])
 
   return (
     <div className="w-full h-full">
