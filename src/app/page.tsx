@@ -93,7 +93,7 @@ export default function Home() {
           />
         </div>
 
-        <div className={`absolute right-4 pointer-events-auto transition-all duration-500 ${activeRouteId ? 'bottom-14' : 'bottom-4'}`}>
+        <div className={`absolute left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-4 pointer-events-auto transition-all duration-500 ${activeRouteId ? 'bottom-14' : 'bottom-1 sm:bottom-4'}`}>
           <p className="text-xs dark:text-white/50 text-black/40">
             By{' '}
             <a
