@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { MapView } from '@/components/map-view'
+import { MapView, type StopData } from '@/components/map-view'
 import { FilterBar } from '@/components/filter-bar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { InfoBar } from '@/components/info-bar'
 import { VehiclePopup } from '@/components/vehicle-popup'
+import { GlassPanel } from '@/components/glass-panel'
 import { RoutePanel } from '@/components/route-panel'
 import { useVehicles } from '@/hooks/use-vehicles'
 import { useTheme } from '@/hooks/use-theme'
@@ -24,12 +25,20 @@ export default function Home() {
   const { vehicles, lastUpdated, loading, error } = useVehicles(filter)
 
   const [hoveredVehicle, setHoveredVehicle] = useState<Vehicle | null>(null)
+  const [hoveredStop, setHoveredStop] = useState<StopData | null>(null)
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null)
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
   const [flyTo, setFlyTo] = useState<{ lng: number; lat: number; zoom?: number; screenY?: number } | null>(null)
 
   const handleVehicleHover = useCallback((vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => {
     setHoveredVehicle(vehicle)
+    setHoveredStop(null)
+    setHoverPosition(screenCoords || null)
+  }, [])
+
+  const handleStopHover = useCallback((stop: StopData | null, screenCoords?: { x: number; y: number }) => {
+    setHoveredStop(stop)
+    setHoveredVehicle(null)
     setHoverPosition(screenCoords || null)
   }, [])
 
@@ -75,9 +84,11 @@ export default function Home() {
         flyTo={flyTo}
         onVehicleClick={handleVehicleClick}
         onVehicleHover={handleVehicleHover}
+        onStopHover={handleStopHover}
         onMapClick={useCallback(() => {
           setActiveRouteId(null)
           setHoveredVehicle(null)
+          setHoveredStop(null)
           setHoverPosition(null)
         }, [])}
       />
@@ -123,6 +134,22 @@ export default function Home() {
           }}
         >
           <VehiclePopup vehicle={hoveredVehicle} />
+        </div>
+      )}
+
+      {hoveredStop && hoverPosition && !hoveredVehicle && (
+        <div
+          className="absolute z-50 pointer-events-none"
+          style={{
+            left: `${Math.min(hoverPosition.x + 12, window.innerWidth - 200)}px`,
+            top: `${Math.max(hoverPosition.y - 40, 10)}px`,
+          }}
+        >
+          <GlassPanel className="px-3 py-2">
+            <span className="text-sm font-medium dark:text-white/90 text-black/80">
+              {hoveredStop.name}
+            </span>
+          </GlassPanel>
         </div>
       )}
 

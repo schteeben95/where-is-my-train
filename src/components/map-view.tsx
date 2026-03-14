@@ -11,7 +11,7 @@ import { createVehicleLayers } from './vehicle-layer'
 import { createAllRouteLayers, type RouteData } from './route-layer'
 import type { Vehicle, VehicleFilter } from '@/lib/types'
 
-interface StopData {
+export interface StopData {
   id: string
   name: string
   lat: number
@@ -27,6 +27,7 @@ interface MapViewProps {
   flyTo: { lng: number; lat: number; zoom?: number; screenY?: number } | null
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
   onVehicleHover: (vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => void
+  onStopHover: (stop: StopData | null, screenCoords?: { x: number; y: number }) => void
   onMapClick: () => void
 }
 
@@ -38,7 +39,7 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
   bearing: 0,
 }
 
-export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteId, flyTo, onVehicleClick, onVehicleHover, onMapClick }: MapViewProps) {
+export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteId, flyTo, onVehicleClick, onVehicleHover, onStopHover, onMapClick }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
   const [stops, setStops] = useState<StopData[]>([])
@@ -156,7 +157,10 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         lineWidthMinPixels: 1,
         radiusMinPixels: 2,
         radiusMaxPixels: 5,
-        pickable: false,
+        pickable: true,
+        onHover: (info: any) => {
+          onStopHover(info.object as StopData | null, info.object ? { x: info.x, y: info.y } : undefined)
+        },
       }),
       ...(viewState.zoom >= 13 ? [
         new TextLayer<StopData>({
