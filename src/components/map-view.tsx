@@ -177,7 +177,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         }),
       ] : []),
     ]
-  }, [showStops, stops, viewState.zoom, isDark])
+  }, [showStops, stops, viewState.zoom, isDark, onStopHover])
 
   const layers = useMemo(
     () => [...routeLayers, ...stopLayers, ...vehicleLayers],
