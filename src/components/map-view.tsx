@@ -6,9 +6,17 @@ import DeckGL from '@deck.gl/react'
 import { FlyToInterpolator } from '@deck.gl/core'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { MELBOURNE_CENTER, DEFAULT_ZOOM, CARTO_TILE_URLS } from '@/lib/constants'
+import { ScatterplotLayer, TextLayer } from '@deck.gl/layers'
 import { createVehicleLayers } from './vehicle-layer'
 import { createAllRouteLayers, type RouteData } from './route-layer'
 import type { Vehicle, VehicleFilter } from '@/lib/types'
+
+interface StopData {
+  id: string
+  name: string
+  lat: number
+  lng: number
+}
 
 interface MapViewProps {
   vehicles: Vehicle[]
@@ -33,14 +41,31 @@ const INITIAL_VIEW_STATE: Record<string, any> = {
 export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRouteId, flyTo, onVehicleClick, onVehicleHover, onMapClick }: MapViewProps) {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE)
   const [allRoutes, setAllRoutes] = useState<RouteData[]>([])
+  const [stops, setStops] = useState<StopData[]>([])
   const prevFlyTo = useRef(flyTo)
 
-  // Load all route shapes once
+  // Load all route shapes and stops once
   useEffect(() => {
     fetch('/data/all-routes.json')
       .then(res => res.json())
       .then((data: RouteData[]) => setAllRoutes(data))
       .catch(() => console.warn('Could not load all-routes.json'))
+
+    fetch('/data/route-stops.json')
+      .then(res => res.json())
+      .then((data: Record<string, StopData[]>) => {
+        // Deduplicate stops across all routes
+        const seen: Record<string, StopData> = {}
+        for (const routeStops of Object.values(data)) {
+          for (const stop of routeStops) {
+            if (!seen[stop.id]) {
+              seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng }
+            }
+          }
+        }
+        setStops(Object.values(seen))
+      })
+      .catch(() => console.warn('Could not load route-stops.json'))
   }, [])
 
   // Fly to a position when flyTo changes
@@ -118,9 +143,43 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
     [filteredRoutes, effectiveHighlight, isDark]
   )
 
+  const showStops = viewState.zoom >= 13
+  const stopLayers = useMemo(() => {
+    if (!showStops || stops.length === 0) return []
+    return [
+      new ScatterplotLayer<StopData>({
+        id: 'stop-dots',
+        data: stops,
+        getPosition: (d) => [d.lng, d.lat],
+        getRadius: 30,
+        getFillColor: isDark ? [255, 255, 255, 120] : [0, 0, 0, 120],
+        getLineColor: isDark ? [255, 255, 255, 60] : [0, 0, 0, 60],
+        stroked: true,
+        lineWidthMinPixels: 1,
+        radiusMinPixels: 3,
+        radiusMaxPixels: 5,
+        pickable: false,
+      }),
+      ...(viewState.zoom >= 14.5 ? [
+        new TextLayer<StopData>({
+          id: 'stop-labels',
+          data: stops,
+          getPosition: (d) => [d.lng, d.lat],
+          getText: (d) => d.name.replace(/ Station$/, ''),
+          getSize: 10,
+          getColor: isDark ? [255, 255, 255, 100] : [0, 0, 0, 100],
+          getPixelOffset: [0, -12],
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontWeight: 400,
+          pickable: false,
+        }),
+      ] : []),
+    ]
+  }, [showStops, stops, viewState.zoom, isDark])
+
   const layers = useMemo(
-    () => [...routeLayers, ...vehicleLayers],
-    [routeLayers, vehicleLayers]
+    () => [...routeLayers, ...stopLayers, ...vehicleLayers],
+    [routeLayers, stopLayers, vehicleLayers]
   )
 
   // Fetch and simplify CARTO style: remove minor roads, buildings, rail (we draw our own)
