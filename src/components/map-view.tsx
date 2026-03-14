@@ -18,6 +18,7 @@ export interface StopData {
   lng: number
   routes: string[]
   routeIds: string[]
+  routeColors: string[]
 }
 
 interface MapViewProps {
@@ -60,23 +61,26 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
       // Only include stops from train routes, collecting route names per stop
       const trainRoutes = routes.filter(r => r.type === 'train')
       const trainRouteIds = new Set(trainRoutes.map(r => r.id))
-      const routeNameById: Record<string, string> = {}
+      const routeInfoById: Record<string, { name: string; color: string }> = {}
       for (const r of trainRoutes) {
-        routeNameById[r.id] = r.name.replace(/ - City$/, '')
+        routeInfoById[r.id] = { name: r.name.replace(/ - City$/, ''), color: r.color }
       }
       // Group by station name to merge platforms into single stops
-      const byName: Record<string, { lats: number[]; lngs: number[]; routes: string[]; routeIds: string[] }> = {}
+      const byName: Record<string, { lats: number[]; lngs: number[]; routes: string[]; routeIds: string[]; routeColors: string[] }> = {}
       for (const [routeId, stops] of Object.entries(routeStops)) {
         if (!trainRouteIds.has(routeId)) continue
-        const lineName = routeNameById[routeId] || routeId
+        const info = routeInfoById[routeId] || { name: routeId, color: '#888' }
         for (const stop of stops) {
           if (!byName[stop.name]) {
-            byName[stop.name] = { lats: [stop.lat], lngs: [stop.lng], routes: [lineName], routeIds: [routeId] }
+            byName[stop.name] = { lats: [stop.lat], lngs: [stop.lng], routes: [info.name], routeIds: [routeId], routeColors: [info.color] }
           } else {
             byName[stop.name].lats.push(stop.lat)
             byName[stop.name].lngs.push(stop.lng)
-            if (!byName[stop.name].routes.includes(lineName)) byName[stop.name].routes.push(lineName)
-            if (!byName[stop.name].routeIds.includes(routeId)) byName[stop.name].routeIds.push(routeId)
+            if (!byName[stop.name].routes.includes(info.name)) {
+              byName[stop.name].routes.push(info.name)
+              byName[stop.name].routeIds.push(routeId)
+              byName[stop.name].routeColors.push(info.color)
+            }
           }
         }
       }
@@ -87,6 +91,7 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
         lng: data.lngs.reduce((a, b) => a + b, 0) / data.lngs.length,
         routes: data.routes,
         routeIds: data.routeIds,
+        routeColors: data.routeColors,
       })))
     }).catch(() => console.warn('Could not load routes/stops data'))
   }, [])

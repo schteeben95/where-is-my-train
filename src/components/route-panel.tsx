@@ -12,6 +12,7 @@ interface RoutePanelProps {
   onFitRoute: (bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => void
   onStopHighlight: (stop: { id: string; lat: number; lng: number } | null) => void
   onStopSelect: (stop: { lat: number; lng: number }) => void
+  onBack?: () => void
 }
 
 const CITY_TERMINI = ['flinders street', 'flinders st', 'southern cross', 'parliament']
@@ -65,7 +66,7 @@ function VehicleCard({ vehicle, onSelect }: { vehicle: Vehicle; onSelect: (v: Ve
   )
 }
 
-export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight, onStopSelect }: RoutePanelProps) {
+export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight, onStopSelect, onBack }: RoutePanelProps) {
   const [route, setRoute] = useState<RouteShape | null>(null)
   const [loading, setLoading] = useState(true)
   const [showStops, setShowStops] = useState(false)
@@ -106,6 +107,19 @@ export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitR
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
           <div className="flex items-center gap-2.5">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="w-7 h-7 flex items-center justify-center rounded-full
+                  bg-white/8 hover:bg-white/15 transition-colors duration-200
+                  dark:text-white/60 text-black/40 hover:dark:text-white/90 hover:text-black/70"
+                aria-label="Back to station"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
             {route && (
               <div
                 className="w-3 h-3 rounded-full shrink-0"

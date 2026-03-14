@@ -31,6 +31,7 @@ export default function Home() {
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
   const [activeStop, setActiveStop] = useState<StopData | null>(null)
   const [highlightStop, setHighlightStop] = useState<{ id: string; lat: number; lng: number } | null>(null)
+  const [panelHighlightRouteIds, setPanelHighlightRouteIds] = useState<string[]>([])
   const [flyTo, setFlyTo] = useState<{ lng: number; lat: number; zoom?: number; screenY?: number } | null>(null)
 
   const handleVehicleHover = useCallback((vehicle: Vehicle | null, screenCoords?: { x: number; y: number }) => {
@@ -94,7 +95,7 @@ export default function Home() {
         isDark={isDark}
         filter={filter}
         activeRouteId={activeRouteId}
-        highlightRouteIds={activeStop?.routeIds ?? hoveredStop?.routeIds ?? (hoveredVehicle ? [hoveredVehicle.routeId] : [])}
+        highlightRouteIds={panelHighlightRouteIds.length > 0 ? panelHighlightRouteIds : (activeStop?.routeIds ?? hoveredStop?.routeIds ?? (hoveredVehicle ? [hoveredVehicle.routeId] : []))}
         highlightStopId={activeStop?.id ?? highlightStop?.id ?? null}
         flyTo={flyTo}
         onVehicleClick={handleVehicleClick}
@@ -175,7 +176,7 @@ export default function Home() {
         </div>
       )}
 
-      {activeRouteId && !activeStop && (
+      {activeRouteId && (
         <div className="pointer-events-auto">
           <RoutePanel
             routeId={activeRouteId}
@@ -185,19 +186,21 @@ export default function Home() {
             onFitRoute={handleFitRoute}
             onStopHighlight={setHighlightStop}
             onStopSelect={handleStopSelect}
+            onBack={activeStop ? () => setActiveRouteId(null) : undefined}
           />
         </div>
       )}
 
-      {activeStop && (
+      {activeStop && !activeRouteId && (
         <div className="pointer-events-auto">
           <StopPanel
             stop={activeStop}
-            onClose={() => setActiveStop(null)}
+            onClose={() => { setActiveStop(null); setPanelHighlightRouteIds([]) }}
             onRouteSelect={(routeId) => {
-              setActiveStop(null)
+              setPanelHighlightRouteIds([])
               setActiveRouteId(routeId)
             }}
+            onRouteHover={setPanelHighlightRouteIds}
           />
         </div>
       )}

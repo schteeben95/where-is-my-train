@@ -7,9 +7,10 @@ interface StopPanelProps {
   stop: StopData
   onClose: () => void
   onRouteSelect: (routeId: string) => void
+  onRouteHover: (routeIds: string[]) => void
 }
 
-export function StopPanel({ stop, onClose, onRouteSelect }: StopPanelProps) {
+export function StopPanel({ stop, onClose, onRouteSelect, onRouteHover }: StopPanelProps) {
   return (
     <div
       data-route-panel
@@ -48,11 +49,17 @@ export function StopPanel({ stop, onClose, onRouteSelect }: StopPanelProps) {
               <button
                 key={stop.routeIds[i]}
                 onClick={() => onRouteSelect(stop.routeIds[i])}
-                className="px-3 py-1.5 text-sm rounded-xl
+                onMouseEnter={() => onRouteHover([stop.routeIds[i]])}
+                onMouseLeave={() => onRouteHover([])}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-xl
                   bg-white/8 hover:bg-white/15 transition-colors duration-200
                   dark:text-white/70 text-black/60 hover:dark:text-white/90 hover:text-black/80
                   cursor-pointer"
               >
+                <div
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: stop.routeColors[i] }}
+                />
                 {name}
               </button>
             ))}
