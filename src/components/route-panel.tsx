@@ -11,6 +11,7 @@ interface RoutePanelProps {
   onVehicleSelect: (vehicle: Vehicle) => void
   onFitRoute: (bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => void
   onStopHighlight: (stop: { id: string; lat: number; lng: number } | null) => void
+  onStopSelect: (stop: { lat: number; lng: number }) => void
 }
 
 const CITY_TERMINI = ['flinders street', 'flinders st', 'southern cross', 'parliament']
@@ -64,7 +65,7 @@ function VehicleCard({ vehicle, onSelect }: { vehicle: Vehicle; onSelect: (v: Ve
   )
 }
 
-export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight }: RoutePanelProps) {
+export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitRoute, onStopHighlight, onStopSelect }: RoutePanelProps) {
   const [route, setRoute] = useState<RouteShape | null>(null)
   const [loading, setLoading] = useState(true)
   const [showStops, setShowStops] = useState(false)
@@ -220,7 +221,8 @@ export function RoutePanel({ routeId, vehicles, onClose, onVehicleSelect, onFitR
                   <div
                     key={stop.id}
                     className="flex items-center gap-2 py-1 rounded-lg px-1 -mx-1
-                      hover:bg-white/10 transition-colors duration-150 cursor-default"
+                      hover:bg-white/10 transition-colors duration-150 cursor-pointer"
+                    onClick={() => onStopSelect({ lat: stop.lat, lng: stop.lng })}
                     onMouseEnter={() => onStopHighlight({ id: stop.id, lat: stop.lat, lng: stop.lng })}
                     onMouseLeave={() => onStopHighlight(null)}
                   >

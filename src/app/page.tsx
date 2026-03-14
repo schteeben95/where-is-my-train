@@ -62,6 +62,10 @@ export default function Home() {
     setFlyTo({ lng: vehicle.lng, lat: vehicle.lat, zoom: 15 })
   }, [])
 
+  const handleStopSelect = useCallback((stop: { lat: number; lng: number }) => {
+    setFlyTo({ lng: stop.lng, lat: stop.lat, zoom: 15 })
+  }, [])
+
   const handleFitRoute = useCallback((bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number }) => {
     const centerLng = (bounds.minLng + bounds.maxLng) / 2
     const centerLat = (bounds.minLat + bounds.maxLat) / 2
@@ -169,6 +173,7 @@ export default function Home() {
             onVehicleSelect={handleVehicleSelect}
             onFitRoute={handleFitRoute}
             onStopHighlight={setHighlightStop}
+            onStopSelect={handleStopSelect}
           />
         </div>
       )}
