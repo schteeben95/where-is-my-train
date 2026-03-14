@@ -12,7 +12,8 @@ const SHAPES_DIR = join(OUT_DIR, 'shapes')
 const LOOKUP_PATH = join(process.cwd(), 'src', 'lib', 'gtfs-lookup.json')
 const TMP_DIR = join(process.cwd(), '.gtfs-tmp')
 
-const ROUTE_TYPES_WE_WANT = ['0', '2']
+// Route types: 0 = tram, 2 = regional rail (V/Line), 400 = metro train
+const ROUTE_TYPES_WE_WANT = ['0', '2', '400']
 
 async function downloadAndExtract(url: string, dest: string) {
   const tmpZip = join(dest, 'gtfs.zip')
