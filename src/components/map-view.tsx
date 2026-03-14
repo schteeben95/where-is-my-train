@@ -158,19 +158,16 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
           for (const layer of style.layers) {
             const p = layer.paint
             if (!p) continue
-            // Darken fill colors
             if (p['background-color']) p['background-color'] = '#050508'
-            if (p['fill-color'] && typeof p['fill-color'] === 'string') {
-              p['fill-opacity'] = (p['fill-opacity'] ?? 1) * 0.6
+            // Only modify simple numeric opacities (skip zoom expressions/arrays)
+            const dim = (key: string, factor: number) => {
+              const v = p[key]
+              if (v === undefined) p[key] = factor
+              else if (typeof v === 'number') p[key] = v * factor
             }
-            // Reduce road/boundary line opacity
-            if (p['line-color'] && typeof p['line-color'] === 'string') {
-              p['line-opacity'] = (p['line-opacity'] ?? 1) * 0.4
-            }
-            // Dim text labels
-            if (p['text-color'] && typeof p['text-color'] === 'string') {
-              p['text-opacity'] = (p['text-opacity'] ?? 1) * 0.5
-            }
+            if (p['fill-color'] && typeof p['fill-color'] === 'string') dim('fill-opacity', 0.6)
+            if (p['line-color'] && typeof p['line-color'] === 'string') dim('line-opacity', 0.4)
+            if (p['text-color'] && typeof p['text-color'] === 'string') dim('text-opacity', 0.5)
           }
         }
         setMapStyle(style)
