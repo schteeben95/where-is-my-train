@@ -12,8 +12,8 @@ const SHAPES_DIR = join(OUT_DIR, 'shapes')
 const LOOKUP_PATH = join(process.cwd(), 'src', 'lib', 'gtfs-lookup.json')
 const TMP_DIR = join(process.cwd(), '.gtfs-tmp')
 
-// Route types: 0 = tram, 2 = regional rail (V/Line), 400 = metro train
-const ROUTE_TYPES_WE_WANT = ['0', '2', '400']
+// Route types: 0 = tram, 400 = metro train (excluding V/Line regional rail type 2)
+const ROUTE_TYPES_WE_WANT = ['0', '400']
 
 async function downloadAndExtract(url: string, dest: string) {
   const tmpZip = join(dest, 'gtfs.zip')
@@ -155,7 +155,11 @@ async function main() {
   const stopsRaw = parseCsvSmall(join(TMP_DIR, 'stops.txt'))
   const tripsRaw = parseCsvSmall(join(TMP_DIR, 'trips.txt'))
 
-  const relevantRoutes = routesRaw.filter(r => ROUTE_TYPES_WE_WANT.includes(r.route_type))
+  const relevantRoutes = routesRaw.filter(r =>
+    ROUTE_TYPES_WE_WANT.includes(r.route_type)
+    && !r.route_id.endsWith('-R:')  // Exclude replacement bus routes
+    && !(r.route_long_name || '').toLowerCase().includes('replacement')
+  )
   const relevantRouteIds = new Set(relevantRoutes.map(r => r.route_id))
 
   const routes = relevantRoutes.map(r => ({
@@ -163,7 +167,7 @@ async function main() {
     name: r.route_long_name || r.route_short_name,
     shortName: r.route_short_name,
     color: r.route_color ? `#${r.route_color}` : (r.route_type === '2' ? '#0072CE' : '#78BE20'),
-    type: r.route_type === '2' ? 'train' : 'tram',
+    type: r.route_type === '0' ? 'tram' : 'train',
   }))
   writeFileSync(join(OUT_DIR, 'routes.json'), JSON.stringify(routes, null, 2))
   console.log(`Wrote ${routes.length} routes`)
@@ -265,6 +269,24 @@ async function main() {
   mkdirSync(join(process.cwd(), 'src', 'lib'), { recursive: true })
   writeFileSync(LOOKUP_PATH, JSON.stringify(lookup, null, 2))
   console.log(`Wrote lookup table`)
+
+  // Bundle all shapes + route metadata into a single file for client-side rendering
+  const allRoutes: { id: string; name: string; color: string; type: string; coordinates: [number, number][] }[] = []
+  for (const route of routes) {
+    const shapePath = join(SHAPES_DIR, `${route.id}.json`)
+    if (existsSync(shapePath)) {
+      const coords = JSON.parse(readFileSync(shapePath, 'utf-8'))
+      allRoutes.push({
+        id: route.id,
+        name: route.name,
+        color: route.color,
+        type: route.type,
+        coordinates: coords,
+      })
+    }
+  }
+  writeFileSync(join(OUT_DIR, 'all-routes.json'), JSON.stringify(allRoutes))
+  console.log(`Wrote all-routes.json (${allRoutes.length} routes)`)
 
   console.log('Done!')
 }

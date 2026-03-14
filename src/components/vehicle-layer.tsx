@@ -35,6 +35,36 @@ function bearingToPixelOffset(bearing: number, dist: number): [number, number] {
   return [Math.sin(rad) * dist, -Math.cos(rad) * dist]
 }
 
+// Greedy label deconfliction: hide labels that would overlap in screen space
+function deconflictLabels(vehicles: Vehicle[], zoom: number): Vehicle[] {
+  // Approximate pixels per degree at this zoom (Mercator)
+  const scale = 256 * Math.pow(2, zoom) / 360
+  const cosLat = Math.cos(-37.8 * Math.PI / 180) // Melbourne latitude
+
+  const MIN_DIST_PX = 90 // minimum pixel distance between label centers
+  const placed: { px: number; py: number }[] = []
+  const visible: Vehicle[] = []
+
+  for (const v of vehicles) {
+    const px = v.lng * scale * cosLat
+    const py = v.lat * scale
+    let tooClose = false
+    for (const p of placed) {
+      const dx = px - p.px
+      const dy = py - p.py
+      if (dx * dx + dy * dy < MIN_DIST_PX * MIN_DIST_PX) {
+        tooClose = true
+        break
+      }
+    }
+    if (!tooClose) {
+      placed.push({ px, py })
+      visible.push(v)
+    }
+  }
+  return visible
+}
+
 export function createVehicleLayers(
   vehicles: Vehicle[],
   zoom: number,
@@ -44,6 +74,11 @@ export function createVehicleLayers(
 ) {
   const isZoomedIn = zoom >= ZOOM_THRESHOLD_LOD
   const vehiclesWithBearing = vehicles.filter(v => v.bearing !== 0)
+
+  // Scale arrow size and offset with zoom to match dot size
+  const t = Math.max(0, Math.min(1, (zoom - 10) / 7)) // 0 at zoom 10, 1 at zoom 17
+  const arrowSize = 8 + t * 8      // 8px at low zoom, 16px at high zoom
+  const arrowOffset = 6 + t * 18   // 6px at low zoom, 24px at high zoom
 
   if (!isZoomedIn) {
     return [
@@ -85,10 +120,10 @@ export function createVehicleLayers(
         getIcon: () => 'arrow',
         iconAtlas: arrowIcon.url,
         iconMapping: arrowIcon.mapping,
-        getSize: 14,
+        getSize: arrowSize,
         getAngle: (d: Vehicle) => 360 - d.bearing,
         getColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 200],
-        getPixelOffset: (d: Vehicle) => bearingToPixelOffset(d.bearing, 14),
+        getPixelOffset: (d: Vehicle) => bearingToPixelOffset(d.bearing, arrowOffset),
         pickable: false,
       }),
     ].filter(Boolean)
@@ -123,21 +158,21 @@ export function createVehicleLayers(
       getIcon: () => 'arrow',
       iconAtlas: arrowIcon.url,
       iconMapping: arrowIcon.mapping,
-      getSize: 18,
+      getSize: arrowSize,
       getAngle: (d: Vehicle) => 360 - d.bearing,
       getColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 220],
-      getPixelOffset: (d: Vehicle) => bearingToPixelOffset(d.bearing, 18),
+      getPixelOffset: (d: Vehicle) => bearingToPixelOffset(d.bearing, arrowOffset),
       pickable: false,
     }),
-    // Route name labels
+    // Route name labels (deconflicted to avoid overlap)
     new TextLayer({
       id: 'vehicle-labels',
-      data: vehicles,
+      data: deconflictLabels(vehicles, zoom),
       getPosition: (d: Vehicle) => [d.lng, d.lat],
       getText: (d: Vehicle) => d.routeName,
       getSize: 11,
       getColor: isDark ? [255, 255, 255, 200] : [0, 0, 0, 200],
-      getPixelOffset: [0, 14],
+      getPixelOffset: [0, 22],
       fontFamily: 'Inter, system-ui, sans-serif',
       fontWeight: 500,
       pickable: false,

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -27,11 +29,11 @@ body {
 
 /* Liquid Glass Design System - iOS 26 / macOS Tahoe inspired */
 .glass {
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-shadow: rgba(0, 0, 0, 0.3);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-blur: 32px;
+  --glass-bg: rgba(10, 10, 15, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-blur: 40px;
 
   position: relative;
   background: var(--glass-bg);
@@ -52,8 +54,8 @@ body {
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.03) 40%,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
     transparent 60%
   );
   pointer-events: none;
@@ -65,6 +67,18 @@ body {
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-shadow: rgba(0, 0, 0, 0.08);
   --glass-highlight: rgba(255, 255, 255, 0.7);
+}
+
+.glass-heavy {
+  --glass-bg: rgba(10, 10, 15, 0.82);
+  --glass-blur: 48px;
+  --glass-border: rgba(255, 255, 255, 0.15);
+}
+
+:root:not(.dark) .glass-heavy {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-blur: 40px;
+  --glass-border: rgba(255, 255, 255, 0.5);
 }
 
 .glass-pill {
