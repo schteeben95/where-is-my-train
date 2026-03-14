@@ -26,8 +26,8 @@ export default function Home() {
   const handleVehicleClick = useCallback((vehicle: Vehicle, screenCoords?: { x: number; y: number }) => {
     setSelectedVehicle(vehicle)
     setPopupPosition(screenCoords || { x: window.innerWidth / 2, y: window.innerHeight / 2 })
-    setActiveRouteId(null)
-    setActiveRouteData(null)
+    // Immediately show the route on the map
+    setActiveRouteId(vehicle.routeId)
   }, [])
 
   const handleViewRoute = useCallback((routeId: string) => {

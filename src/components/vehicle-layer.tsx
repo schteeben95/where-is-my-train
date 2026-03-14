@@ -1,6 +1,6 @@
 'use client'
 
-import { ScatterplotLayer, TextLayer } from '@deck.gl/layers'
+import { ScatterplotLayer, TextLayer, IconLayer } from '@deck.gl/layers'
 import type { Vehicle } from '@/lib/types'
 import { ZOOM_THRESHOLD_LOD } from '@/lib/constants'
 
@@ -11,6 +11,22 @@ function hexToRgb(hex: string): [number, number, number] {
     : [136, 136, 136]
 }
 
+// Create a data URL for a directional arrow SVG
+function createArrowIconMapping() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+    <polygon points="32,8 48,40 32,32 16,40" fill="white" stroke="none"/>
+  </svg>`
+  const encoded = typeof btoa !== 'undefined'
+    ? `data:image/svg+xml;base64,${btoa(svg)}`
+    : `data:image/svg+xml,${encodeURIComponent(svg)}`
+  return {
+    url: encoded,
+    mapping: { arrow: { x: 0, y: 0, width: 64, height: 64, anchorY: 32 } },
+  }
+}
+
+const arrowIcon = createArrowIconMapping()
+
 export function createVehicleLayers(
   vehicles: Vehicle[],
   zoom: number,
@@ -18,9 +34,11 @@ export function createVehicleLayers(
   onVehicleClick: (vehicle: Vehicle, screenCoords?: { x: number; y: number }) => void
 ) {
   const isZoomedIn = zoom >= ZOOM_THRESHOLD_LOD
+  const vehiclesWithBearing = vehicles.filter(v => v.bearing !== 0)
 
   if (!isZoomedIn) {
     return [
+      // Glow layer (dark mode only)
       isDark
         ? new ScatterplotLayer({
             id: 'vehicle-glow',
@@ -33,6 +51,7 @@ export function createVehicleLayers(
             pickable: false,
           })
         : null,
+      // Main dots
       new ScatterplotLayer({
         id: 'vehicle-dots',
         data: vehicles,
@@ -46,10 +65,25 @@ export function createVehicleLayers(
           if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
         },
       }),
+      // Direction arrows
+      new IconLayer({
+        id: 'vehicle-arrows',
+        data: vehiclesWithBearing,
+        getPosition: (d: Vehicle) => [d.lng, d.lat],
+        getIcon: () => 'arrow',
+        iconAtlas: arrowIcon.url,
+        iconMapping: arrowIcon.mapping,
+        getSize: 16,
+        getAngle: (d: Vehicle) => 360 - d.bearing,
+        getColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 200],
+        getPixelOffset: [0, -14],
+        pickable: false,
+      }),
     ].filter(Boolean)
   }
 
   return [
+    // Zoomed-in dots with stroke
     new ScatterplotLayer({
       id: 'vehicle-icons',
       data: vehicles,
@@ -65,10 +99,22 @@ export function createVehicleLayers(
       onClick: (info: any) => {
         if (info.object) onVehicleClick(info.object as Vehicle, { x: info.x, y: info.y })
       },
-      transitions: {
-        getPosition: { duration: 1000, type: 'interpolation' },
-      },
     }),
+    // Direction arrows (larger when zoomed in)
+    new IconLayer({
+      id: 'vehicle-arrows-zoomed',
+      data: vehiclesWithBearing,
+      getPosition: (d: Vehicle) => [d.lng, d.lat],
+      getIcon: () => 'arrow',
+      iconAtlas: arrowIcon.url,
+      iconMapping: arrowIcon.mapping,
+      getSize: 20,
+      getAngle: (d: Vehicle) => 360 - d.bearing,
+      getColor: (d: Vehicle) => [...hexToRgb(d.routeColor), 220],
+      getPixelOffset: [0, -18],
+      pickable: false,
+    }),
+    // Route name labels
     new TextLayer({
       id: 'vehicle-labels',
       data: vehicles,
@@ -76,13 +122,10 @@ export function createVehicleLayers(
       getText: (d: Vehicle) => d.routeName,
       getSize: 11,
       getColor: isDark ? [255, 255, 255, 200] : [0, 0, 0, 200],
-      getPixelOffset: [0, -18],
+      getPixelOffset: [0, 14],
       fontFamily: 'Inter, system-ui, sans-serif',
       fontWeight: 500,
       pickable: false,
-      transitions: {
-        getPosition: { duration: 1000, type: 'interpolation' },
-      },
     }),
   ]
 }
