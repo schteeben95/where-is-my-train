@@ -46,26 +46,24 @@ export function MapView({ vehicles, isDark, filter, activeRouteId, highlightRout
 
   // Load all route shapes and stops once
   useEffect(() => {
-    fetch('/data/all-routes.json')
-      .then(res => res.json())
-      .then((data: RouteData[]) => setAllRoutes(data))
-      .catch(() => console.warn('Could not load all-routes.json'))
-
-    fetch('/data/route-stops.json')
-      .then(res => res.json())
-      .then((data: Record<string, StopData[]>) => {
-        // Deduplicate stops across all routes
-        const seen: Record<string, StopData> = {}
-        for (const routeStops of Object.values(data)) {
-          for (const stop of routeStops) {
-            if (!seen[stop.id]) {
-              seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng }
-            }
+    Promise.all([
+      fetch('/data/all-routes.json').then(r => r.json()),
+      fetch('/data/route-stops.json').then(r => r.json()),
+    ]).then(([routes, routeStops]: [RouteData[], Record<string, StopData[]>]) => {
+      setAllRoutes(routes)
+      // Only include stops from train routes
+      const trainRouteIds = new Set(routes.filter(r => r.type === 'train').map(r => r.id))
+      const seen: Record<string, StopData> = {}
+      for (const [routeId, stops] of Object.entries(routeStops)) {
+        if (!trainRouteIds.has(routeId)) continue
+        for (const stop of stops) {
+          if (!seen[stop.id]) {
+            seen[stop.id] = { id: stop.id, name: stop.name, lat: stop.lat, lng: stop.lng }
           }
         }
-        setStops(Object.values(seen))
-      })
-      .catch(() => console.warn('Could not load route-stops.json'))
+      }
+      setStops(Object.values(seen))
+    }).catch(() => console.warn('Could not load routes/stops data'))
   }, [])
 
   // Fly to a position when flyTo changes
